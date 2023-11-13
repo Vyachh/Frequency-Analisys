@@ -1,6 +1,5 @@
 import asyncio
 import falib as fl
-import analysis_methods as am
 import file_paths as fp
 
 async def main():
@@ -14,11 +13,9 @@ async def main():
     freqs_list = []
     results_lines = []
     
-    #results_lines.append ("\tЗадание по сдаче курса «Информационные технологии», “Информационные системы”. Анализ данных:\n")
+    print("\tЗадание по сдаче курса «Информационные технологии», “Информационные системы”. Анализ данных:\n")
     fl.start_freq_analyze(filenames, text, freqs_list, results_lines)
-    await fl.switch(filenames, results_lines,freqs_list)
-
-
+    await fl.switch(filenames, results_lines, freqs_list)
 
 asyncio.run(main())
 print("Done...")
