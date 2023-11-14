@@ -3,8 +3,27 @@ import string
 import aiofiles
 import os
 import analysis_methods as am
+import pymorphy2
 from collections import Counter
 from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
+
+
+async def stem_lemma(freqs_list):
+    morph = pymorphy2.MorphAnalyzer()
+    stemmer = SnowballStemmer("russian")
+    stem_lemma_list = Counter()
+    # Проходимся по каждому слову в freqs_list
+    for word, freq in freqs_list[0].items():
+    
+        # Получаем нормльную форму слова с помощью pymorphy2
+        lemma = morph.parse(word)[0].normal_form
+        # Получаем стем (неизменяемую форму) слова с помощью nltk.stem
+        stem_word = stemmer.stem(lemma)
+    
+        stem_lemma_list[stem_word] += freq
+
+    return stem_lemma_list
 
 async def read_file(path):
     async with aiofiles.open(path, "r", encoding="utf-8") as file:
@@ -149,7 +168,10 @@ async def switch(filenames, results_lines, freqs_list):
                 
             await print_selected_text(results_lines, choice)
             break
-
+        #Загрузка новой корреляции
+        elif choice.lower().startswith("z"):
+            
+            break
         #Загрузка корреляции
         elif choice.lower().startswith("x"):
             am.pearson(freqs_list, filenames)
