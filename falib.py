@@ -4,12 +4,10 @@ import aiofiles
 import os
 import analysis_methods as am
 import pymorphy2
-import nltk
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 
-# async
 
 def stem_lemma(freqs_list):
     morph = pymorphy2.MorphAnalyzer()
@@ -26,10 +24,7 @@ def stem_lemma(freqs_list):
             
             stem_lemma_list[stem_word] += freq
     
-        stem_lemma_list[stem_word] += freq
-
-    return [stem_lemma_list]
-
+    return stem_lemma_list
 
 
 async def read_file(path):
@@ -52,20 +47,45 @@ def freq_analyze(text):
 
 #Анализ длины предложений
 def sents_analyze(text):
-    sentences = nltk.sent_tokenize(text) 
+    sentences = sent_tokenize(text) 
     word_counts = []
     for sentence in sentences:
-        words = nltk.word_tokenize(sentence)
+        words = word_tokenize(sentence)
         word_counts.append(len(words))
-
     return word_counts, len(sentences)
 
+#Анализ одного предложения
+def sent_tokenize(text):
+    sentences = []
+    sentence = ""
+    for char in text:
+        sentence += char
+        if check_mark(char):
+            sentences.append(sentence)
+            sentence = ""
+    return sentences
+
+#Поиск по знакам препинания
+def check_mark(char):
+    if char in ['?', '!', '.']:
+        return True
+    return False
+
+#Анализ слов впредложении
+def word_tokenize(sentence):
+    chars = ""
+    words = []
+    for char in sentence:
+        chars += char
+        if char == " " or check_mark(char):
+            words.append(chars.strip())
+            chars = ""
+    return words
 
 def clear_console():
     os.system("cls")
 
-def start_freq_analyze(filenames, text, freqs_list, results_lines, freqs_list_normalized):
-
+def start_freq_analyze(filenames, text, freqs_list, results_lines, freq_list_normalized):
     for r, result in enumerate(text):
         # Анализ количества слов в предложениях
         sents_info = sents_analyze(result)
@@ -79,7 +99,7 @@ def start_freq_analyze(filenames, text, freqs_list, results_lines, freqs_list_no
         # Вызываем функцию частотного анализа и выводим результат
         freqs = freq_analyze(result)
         freqs_list.append(freqs)
-
+        
         # Вызываем функцию stem_lemma и добавляем результат в freq_list_normalized
         stem_lemma_list = stem_lemma([freqs])
         freq_list_normalized.append(stem_lemma_list)
@@ -88,10 +108,6 @@ def start_freq_analyze(filenames, text, freqs_list, results_lines, freqs_list_no
         sorted_freqs = dict(sorted(freqs.items(), key=lambda x: (-x[1], x[0])))
         
         text_append(filenames, results_lines, r, average, sorted_freqs)
-    
-    # # freqs_list_normalized = freqs_list
-    freqs_list_normalized = stem_lemma(freqs_list)
-    return freqs_list_normalized
 
 def text_append(filenames, results_lines, r, average, sorted_freqs):
     # Создаем подмассив для каждого текста
@@ -126,7 +142,6 @@ def text_append(filenames, results_lines, r, average, sorted_freqs):
     # Добавляем вложенный массив в result_lines
     results_lines.append(text_data)
 
-
 async def switch(filenames, results_lines, freqs_list, freq_list_normalized):
     while True:
         # Выбор пользователя на вывод данных
@@ -136,7 +151,6 @@ async def switch(filenames, results_lines, freqs_list, freq_list_normalized):
                        "Загрузить уникальные корреляции (X)?\n"+
                        "Загрузить нормализованные корреляции (Z)?:")
         clear_console()
-
         if choice.lower().startswith("y"):
             # Вывод результатов в файл
             async with aiofiles.open(fp.file_result_write, 'w', encoding="utf-8") as result_file:
@@ -154,6 +168,7 @@ async def switch(filenames, results_lines, freqs_list, freq_list_normalized):
 
             # Вывод результата определенного текста в консоль
         elif choice.lower().startswith("t"):
+            # Если пользователь выбрал опцию, начинающуюся с "t"
             number = 1
             for filename in filenames:
                 print(f"{number}: {filename}")
@@ -161,7 +176,6 @@ async def switch(filenames, results_lines, freqs_list, freq_list_normalized):
                 
             await print_selected_text(results_lines, choice)
             break
-
         
         #Загрузка новой корреляции
         elif choice.lower().startswith("z"):
@@ -210,33 +224,3 @@ async def print_selected_text(results_lines,choice_txt):
                         break
                     else:
                         print("Некорректный выбор. Введите 'Y' или 'N'.")
-
-
-
-#{#Анализ одного предложения
-# def sent_tokenize(text):
-#     sentences = []
-#     sentence = ""
-#     for char in text:
-#         sentence += char
-#         if check_mark(char):
-#             sentences.append(sentence)
-#             sentence = ""
-#     return sentences
-
-# #Поиск по знакам препинания
-# def check_mark(char):
-#     if char in ['?', '!', '.']:
-#         return True
-#     return False
-
-#Анализ слов впредложении
-# def word_tokenize(sentence):
-#     chars = ""
-#     words = []
-#     for char in sentence:
-#         chars += char
-#         if char == " " or check_mark(char):
-#             words.append(chars.strip())
-#             chars = ""
-#     return words}
