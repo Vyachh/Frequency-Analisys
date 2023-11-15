@@ -108,6 +108,24 @@ def print_freqs(results_lines, sorted_freqs, text_data):
     # Добавляем вложенный массив в result_lines
     results_lines.append(text_data)
 
+def cutout_freqs(freqs_list, cut_threshold):
+    # Создаем счетчик для подсчета частоты слов
+    total_counter = Counter()
+
+    # Подсчитываем общую частоту слов
+    for freqs in freqs_list:
+        total_counter.update(freqs)
+
+    # Создаем новый объект Counter для хранения отфильтрованных частот
+    filtered_freqs_counter = Counter()
+
+    # Отфильтровываем слова, встречающиеся более или равно cut_threshold раз
+    for freqs in freqs_list:
+        filtered_freqs = {word: freq for word, freq in freqs.items() if freq > cut_threshold}
+        filtered_freqs_counter.update(filtered_freqs)
+
+    return filtered_freqs_counter
+
 #Second step
 
 async def switch(filenames, results_lines, freqs_list, freq_list_normalized):
@@ -119,6 +137,7 @@ async def switch(filenames, results_lines, freqs_list, freq_list_normalized):
                        "Загрузить уникальные корреляции (X)?\n"+
                        "Загрузить нормализованные корреляции (Z)?:")
         clear_console()
+
         if choice.lower().startswith("y"):
             # Вывод результатов в файл
             await print_in_file(results_lines)
@@ -173,24 +192,6 @@ async def print_in_file(results_lines):
                 # Перебираем вложенные массивы и записываем данные в файл
         for text_data in results_lines:
             await result_file.writelines(text_data)
-
-def cutout_freqs(freqs_list, cut_threshold):
-    # Создаем счетчик для подсчета частоты слов
-    total_counter = Counter()
-
-    # Подсчитываем общую частоту слов
-    for freqs in freqs_list:
-        total_counter.update(freqs)
-
-    # Создаем новый список для хранения отфильтрованных частот
-    filtered_freqs_list = []
-
-    # Отфильтровываем слова, встречающиеся более или равно cut_threshold раз
-    for freqs in freqs_list:
-        filtered_freqs = {word: freq for word, freq in freqs.items() if freq > cut_threshold}
-        filtered_freqs_list.append(filtered_freqs)
-
-    return filtered_freqs_list
 
 
 async def print_selected_text(results_lines,choice_txt):
