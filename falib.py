@@ -30,8 +30,13 @@ async def start_freq_analyze(filenames, text, freqs_list, results_lines, freq_li
         
         text_append(filenames, results_lines, r, average, sorted_freqs)
         #for end
-    filtered_freq_list = cutout_freqs(freq_list_normalized,2)
-    freq_list_normalized_sorted.append(filtered_freq_list)
+    cutout_freqs(freq_list_normalized, freq_list_normalized_sorted,cut_threshold=2)
+
+def cutout_freqs(freq_list_normalized, freq_list_normalized_sorted, cut_threshold):
+    for freqs in freq_list_normalized:
+        sorted_freqs = {k: v for k, v in sorted(freqs.items(), key=lambda item: item[1], reverse=True)}
+        sorted_freqs_filtered = {k: v for k, v in sorted_freqs.items() if v >= cut_threshold}
+        freq_list_normalized_sorted.append(sorted_freqs_filtered)
 
 #Анализ длины предложений
 def sents_analyze(text):
@@ -108,23 +113,6 @@ def print_freqs(results_lines, sorted_freqs, text_data):
     # Добавляем вложенный массив в result_lines
     results_lines.append(text_data)
 
-def cutout_freqs(freqs_list, cut_threshold):
-    # Создаем счетчик для подсчета частоты слов
-    total_counter = Counter()
-
-    # Подсчитываем общую частоту слов
-    for freqs in freqs_list:
-        total_counter.update(freqs)
-
-    # Создаем новый объект Counter для хранения отфильтрованных частот
-    filtered_freqs_counter = Counter()
-
-    # Отфильтровываем слова, встречающиеся более или равно cut_threshold раз
-    for freqs in freqs_list:
-        filtered_freqs = {word: freq for word, freq in freqs.items() if freq > cut_threshold}
-        filtered_freqs_counter.update(filtered_freqs)
-
-    return filtered_freqs_counter
 
 #Second step
 
@@ -259,3 +247,21 @@ async def read_file(path):
 #             words.append(chars.strip())
 #             chars = ""
 #     return words
+
+# def cutout_freqs(freqs_list, cut_threshold):
+#     # Создаем счетчик для подсчета частоты слов
+#     total_counter = Counter()
+
+#     # Подсчитываем общую частоту слов
+#     for freqs in freqs_list:
+#         total_counter.update(freqs)
+
+#     # Создаем новый объект Counter для хранения отфильтрованных частот
+#     filtered_freqs_counter = Counter()
+
+#     # Отфильтровываем слова, встречающиеся более или равно cut_threshold раз
+#     for freqs in freqs_list:
+#         filtered_freqs = {word: freq for word, freq in freqs.items() if freq > cut_threshold}
+#         filtered_freqs_counter.update(filtered_freqs)
+
+#     return filtered_freqs_counter
