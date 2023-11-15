@@ -116,14 +116,15 @@ def print_freqs(results_lines, sorted_freqs, text_data):
 
 #Second step
 
-async def switch(filenames, results_lines, freqs_list, freq_list_normalized):
+async def switch(filenames, results_lines, freqs_list, freq_list_normalized, freq_list_normalized_sorted):
     while True:
         # Выбор пользователя на вывод данных
         choice = input("Вывести результаты частотной характеристики в файл (Y)?\n"+
                        "Вывести результаты частотной характеристики в консоль (N)?\n"+
                        "Вывести результаты определенного текста(T)?\n"+
                        "Загрузить уникальные корреляции (X)?\n"+
-                       "Загрузить нормализованные корреляции (Z)?:")
+                       "Загрузить нормализованные корреляции (Z)?:\n"+
+                       "Загрузить отфильтрованные корреляции (C)?:\n")
         clear_console()
 
         if choice.lower().startswith("y"):
@@ -155,6 +156,12 @@ async def switch(filenames, results_lines, freqs_list, freq_list_normalized):
         elif choice.lower().startswith("x"):
             load_correlations(filenames, freqs_list)
             break
+
+         #Загрузка корреляции
+        elif choice.lower().startswith("c"):
+            load_correlations(filenames, freq_list_normalized_sorted)
+            break
+        
             
         else:
             print("Некорректный выбор. Введите 'Y'/'N'/'T'/'X'/'Z'.")
