@@ -27,7 +27,7 @@ def plot_correlation(freqs_list, filenames, method,title):
         
         corr_value = calculate_corr_method(x, y, method)
         # Названия осей
-        xlabel = filenames[j].replace(fp.default_path_files, '')[:max_textsize]
+        xlabel = filenames[j+1].replace(fp.default_path_files, '')[:max_textsize]
         ylabel = filenames[0].replace(fp.default_path_files, '')[:max_textsize]
         
         ax.set_xlabel(f'Частоты в {xlabel}...',fontsize = label_fontsize)
@@ -67,7 +67,7 @@ def odds_ratios(freqs_list = [], filenames = []):
         values = list(odds_ratios.values())
             
         # Названия осей
-        xlabel = filenames[j].replace(fp.default_path_files,'')[:max_textsize]
+        xlabel = filenames[j+1].replace(fp.default_path_files,'')[:max_textsize]
         ylabel = filenames[0].replace(fp.default_path_files,'')[:max_textsize]
             
         ax.set_xlabel(f'Частоты в {xlabel}...',fontsize = label_fontsize, color = 'blue', verticalalignment = 'top')
