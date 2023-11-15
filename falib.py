@@ -9,21 +9,23 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 
 
-async def stem_lemma(freqs_list):
+def stem_lemma(freqs_list):
     morph = pymorphy2.MorphAnalyzer()
     stemmer = SnowballStemmer("russian")
     stem_lemma_list = Counter()
+    
     # Проходимся по каждому слову в freqs_list
-    for word, freq in freqs_list[0].items():
+    for freqs in freqs_list:
+        for word, freq in freqs.items():
+            # Получаем нормальную форму слова с помощью pymorphy2
+            lemma = morph.parse(word)[0].normal_form
+            # Получаем стем (неизменяемую форму) слова с помощью nltk.stem
+            stem_word = stemmer.stem(lemma)
+            
+            stem_lemma_list[stem_word] += freq
     
-        # Получаем нормльную форму слова с помощью pymorphy2
-        lemma = morph.parse(word)[0].normal_form
-        # Получаем стем (неизменяемую форму) слова с помощью nltk.stem
-        stem_word = stemmer.stem(lemma)
-    
-        stem_lemma_list[stem_word] += freq
-
     return stem_lemma_list
+
 
 async def read_file(path):
     async with aiofiles.open(path, "r", encoding="utf-8") as file:
@@ -83,7 +85,7 @@ def word_tokenize(sentence):
 def clear_console():
     os.system("cls")
 
-def start_freq_analyze(filenames, text, freqs_list, results_lines):
+def start_freq_analyze(filenames, text, freqs_list, results_lines, freq_list_normalized):
     for r, result in enumerate(text):
         # Анализ количества слов в предложениях
         sents_info = sents_analyze(result)
@@ -97,6 +99,11 @@ def start_freq_analyze(filenames, text, freqs_list, results_lines):
         # Вызываем функцию частотного анализа и выводим результат
         freqs = freq_analyze(result)
         freqs_list.append(freqs)
+        
+        # Вызываем функцию stem_lemma и добавляем результат в freq_list_normalized
+        stem_lemma_list = stem_lemma([freqs])
+        freq_list_normalized.append(stem_lemma_list)
+        
         # Сортировка частотного анализа по убыванию частоты
         sorted_freqs = dict(sorted(freqs.items(), key=lambda x: (-x[1], x[0])))
         
@@ -135,13 +142,14 @@ def text_append(filenames, results_lines, r, average, sorted_freqs):
     # Добавляем вложенный массив в result_lines
     results_lines.append(text_data)
 
-async def switch(filenames, results_lines, freqs_list):
+async def switch(filenames, results_lines, freqs_list, freq_list_normalized):
     while True:
         # Выбор пользователя на вывод данных
-        choice = input("Вывести все результаты в файл (Y)?\n"+
-                       "Вывести все результаты в файл в консоль (N)?\n"+
-                       "Вывести определенный текст(T)?\n"+
-                       "Загрузить корреляции (X)?:")
+        choice = input("Вывести результаты частотной характеристики в файл (Y)?\n"+
+                       "Вывести результаты частотной характеристики в консоль (N)?\n"+
+                       "Вывести результаты определенного текста(T)?\n"+
+                       "Загрузить уникальные корреляции (X)?\n"+
+                       "Загрузить нормализованные корреляции (Z)?:")
         clear_console()
         if choice.lower().startswith("y"):
             # Вывод результатов в файл
@@ -168,10 +176,15 @@ async def switch(filenames, results_lines, freqs_list):
                 
             await print_selected_text(results_lines, choice)
             break
+        
         #Загрузка новой корреляции
         elif choice.lower().startswith("z"):
-            
+            am.pearson(freq_list_normalized, filenames)
+            am.spearman(freq_list_normalized, filenames)
+            am.odds_ratios(freq_list_normalized, filenames)
+            print("Корреляции сохранены.")
             break
+        
         #Загрузка корреляции
         elif choice.lower().startswith("x"):
             am.pearson(freqs_list, filenames)
@@ -181,7 +194,7 @@ async def switch(filenames, results_lines, freqs_list):
             break
             
         else:
-            print("Некорректный выбор. Введите 'Y'/'N'/'T'/'X'.")
+            print("Некорректный выбор. Введите 'Y'/'N'/'T'/'X'/'Z'.")
 
 async def print_selected_text(results_lines,choice_txt):
     while True:
