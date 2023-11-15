@@ -4,7 +4,6 @@ import file_paths as fp
 
 async def main():
     fl.clear_console()
-    # filenames = [fp.file_1_read, fp.file_2_read, fp.file_3_read, fp.file_4_read]
     
     file_info = fp.scan_folder()
     file_names = file_info[0]
@@ -13,12 +12,22 @@ async def main():
     text = await asyncio.gather(*tasks)
 
     freqs_list = []
-    results_lines = []    
-    freqs_list_normalized = []
+    results_lines = []
+    freq_list_normalized = []
+    freq_list_normalized_sorted = []
 
     print("\tЗадание по сдаче курса «Информационные технологии», “Информационные системы”. Анализ данных:\n")
-    fl.start_freq_analyze(file_names, text, freqs_list, results_lines, freqs_list_normalized)
-    await fl.switch(file_names, results_lines, freqs_list, freqs_list_normalized)
+    fl.start_freq_analyze(file_names, text, freqs_list, results_lines, freq_list_normalized)
+    await fl.switch(file_names, results_lines, freqs_list, freq_list_normalized)
+    #print(freq_list_normalized)
 
 asyncio.run(main())
 print("Done...")
+
+# Возможные улучшения
+# написать кнопку "назад" c очисткой консоли
+# добавить новый freq_list_normalized_sorted, с отсеиванием слов, встречающихся 1-2 раза
+# 
+# 
+# 
+# 
