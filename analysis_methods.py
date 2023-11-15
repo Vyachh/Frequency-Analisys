@@ -17,8 +17,8 @@ def calculate_corr_method(x, y, method):
         raise ValueError("Неподдерживаемый метод корреляции")
 
 def plot_correlation(freqs_list, filenames, method,title):
-    print(freqs_list)
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    
     for j, ax in enumerate(axes.flatten()):
         common_words = set(freqs_list[0].keys()) & set(freqs_list[j+1].keys())
         
