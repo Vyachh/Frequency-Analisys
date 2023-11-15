@@ -17,9 +17,8 @@ async def main():
     freq_list_normalized_sorted = []
 
     print("\tЗадание по сдаче курса «Информационные технологии», “Информационные системы”. Анализ данных:\n")
-    fl.start_freq_analyze(file_names, text, freqs_list, results_lines, freq_list_normalized)
+    await fl.start_freq_analyze(file_names, text, freqs_list, results_lines, freq_list_normalized,freq_list_normalized_sorted)
     await fl.switch(file_names, results_lines, freqs_list, freq_list_normalized)
-    #print(freq_list_normalized)
 
 asyncio.run(main())
 print("Done...")
