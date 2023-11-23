@@ -1,3 +1,4 @@
+import asyncio
 import file_paths as fp
 import string
 import aiofiles
@@ -8,6 +9,15 @@ import nltk
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
+
+file_names = []
+file_paths = []
+
+freqs_list = []
+results_lines = []
+freq_list_normalized = []
+freq_list_normalized_sorted = []
+
 
 #First step
 async def start_freq_analyze(filenames, text, freqs_list, results_lines, freq_list_normalized, freq_list_normalized_sorted):
@@ -116,15 +126,23 @@ def print_freqs(results_lines, sorted_freqs, text_data):
 
 #Second step
 
-async def switch(filenames, results_lines, freqs_list, freq_list_normalized, freq_list_normalized_sorted):
+async def init():
+    file_info = fp.scan_folder()
+    file_names = file_info[0]
+    file_paths = file_info[1]
+    tasks = [read_file(file_path) for file_path in file_paths]
+    text = await asyncio.gather(*tasks)
+
+    await start_freq_analyze(file_names, text, freqs_list, results_lines, freq_list_normalized,freq_list_normalized_sorted)
     while True:
         # Выбор пользователя на вывод данных
         choice = input("Вывести результаты частотной характеристики в файл (Y)?\n"+
-                       "Вывести результаты частотной характеристики в консоль (N)?\n"+
-                       "Вывести результаты определенного текста(T)?\n"+
-                       "Загрузить уникальные корреляции (X)?\n"+
-                       "Загрузить нормализованные корреляции (Z)?:\n"+
-                       "Загрузить отфильтрованные корреляции (C)?:\n")
+                                "Вывести результаты частотной характеристики в консоль (N)?\n"+
+                                "Вывести результаты определенного текста(T)?\n"+
+                                "Загрузить уникальные корреляции (X)?\n"+
+                                "Загрузить нормализованные корреляции (Z)?:\n"+
+                                "Загрузить отфильтрованные корреляции (C)?:\n")
+        
         clear_console()
 
         if choice.lower().startswith("y"):
@@ -140,7 +158,7 @@ async def switch(filenames, results_lines, freqs_list, freq_list_normalized, fre
             # Вывод результата определенного текста в консоль
         elif choice.lower().startswith("t"):
             number = 1
-            for filename in filenames:
+            for filename in file_names:
                 print(f"{number}: {filename}")
                 number = number + 1
                 
@@ -149,17 +167,17 @@ async def switch(filenames, results_lines, freqs_list, freq_list_normalized, fre
         
         #Загрузка новой корреляции
         elif choice.lower().startswith("z"):
-            load_correlations_normalized(filenames, freq_list_normalized)
+            load_correlations_normalized(file_names, freq_list_normalized)
             break
         
         #Загрузка корреляции
         elif choice.lower().startswith("x"):
-            load_correlations(filenames, freqs_list)
+            load_correlations(file_names, freqs_list)
             break
 
          #Загрузка корреляции
         elif choice.lower().startswith("c"):
-            load_correlations(filenames, freq_list_normalized_sorted)
+            load_correlations(file_names, freq_list_normalized_sorted)
             break
         
             
@@ -167,14 +185,14 @@ async def switch(filenames, results_lines, freqs_list, freq_list_normalized, fre
             print("Некорректный выбор. Введите 'Y'/'N'/'T'/'X'/'Z'.")
 
 def load_correlations(filenames, freqs_list):
-    am.pearson(freqs_list, filenames)
-    am.spearman(freqs_list, filenames)
-    am.odds_ratios(freqs_list, filenames)
-    print("Корреляции сохранены.")
+       am.pearson(freqs_list, filenames),
+       am.spearman(freqs_list, filenames),
+       am.odds_ratios(freqs_list, filenames)
+       print("Корреляции сохранены.")
 
 def load_correlations_normalized(filenames, freq_list_normalized):
-    am.pearson(freq_list_normalized, filenames)
-    am.spearman(freq_list_normalized, filenames)
+    am.pearson(freq_list_normalized, filenames),
+    am.spearman(freq_list_normalized, filenames),
     am.odds_ratios(freq_list_normalized, filenames)
     print("Корреляции сохранены.")
 
@@ -225,50 +243,3 @@ async def read_file(path):
     async with aiofiles.open(path, "r", encoding="utf-8") as file:
         text = await file.read()
         return text
-
-
-                        #Анализ одного предложения
-# def sent_tokenize(text):
-#     sentences = []
-#     sentence = ""
-#     for char in text:
-#         sentence += char
-#         if check_mark(char):
-#             sentences.append(sentence)
-#             sentence = ""
-#     return sentences
-
-# #Поиск по знакам препинания
-# def check_mark(char):
-#     if char in ['?', '!', '.']:
-#         return True
-#     return False
-
-# #Анализ слов впредложении
-# def word_tokenize(sentence):
-#     chars = ""
-#     words = []
-#     for char in sentence:
-#         chars += char
-#         if char == " " or check_mark(char):
-#             words.append(chars.strip())
-#             chars = ""
-#     return words
-
-# def cutout_freqs(freqs_list, cut_threshold):
-#     # Создаем счетчик для подсчета частоты слов
-#     total_counter = Counter()
-
-#     # Подсчитываем общую частоту слов
-#     for freqs in freqs_list:
-#         total_counter.update(freqs)
-
-#     # Создаем новый объект Counter для хранения отфильтрованных частот
-#     filtered_freqs_counter = Counter()
-
-#     # Отфильтровываем слова, встречающиеся более или равно cut_threshold раз
-#     for freqs in freqs_list:
-#         filtered_freqs = {word: freq for word, freq in freqs.items() if freq > cut_threshold}
-#         filtered_freqs_counter.update(filtered_freqs)
-
-#     return filtered_freqs_counter
