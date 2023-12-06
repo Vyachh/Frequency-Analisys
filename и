@@ -1,0 +1,33 @@
+from collections import Counter
+
+def pad_arrays(array1, array2):
+    max_length = max(len(array1), len(array2))
+    
+    for i in range(max_length):
+        # Получаем Counter'ы для текущего индекса
+        counter1 = array1[i] if i < len(array1) else Counter()
+        counter2 = array2[i] if i < len(array2) else Counter()
+        
+        # Получаем все уникальные слова из Counter'ов
+        all_words = set(counter1.keys()).union(set(counter2.keys()))
+        
+        # Добавляем отсутствующие слова с нулевой частотой
+        for word in all_words:
+            if word not in counter1:
+                counter1[word] = 0
+            if word not in counter2:
+                counter2[word] = 0
+        
+        # Обновляем массивы
+        array1[i] = counter1
+        array2[i] = counter2
+    
+    return array1, array2
+
+# Пример использования
+array = [Counter({'apple': 3, 'grape': 2}), Counter({'dog': 1, 'grape': 4}), Counter({'dog': 5}), Counter({'grape': 4, 'kiwi': 2})]
+ 
+
+array[0], array[1] = pad_arrays([array[0]], [array[1]])
+print(array[0])
+print(array[1])

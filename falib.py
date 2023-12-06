@@ -22,12 +22,14 @@ freq_list_normalized_sorted = []
 #First step
 async def start_freq_analyze(filenames, text, freqs_list, results_lines, freq_list_normalized, freq_list_normalized_sorted):
     for r, result in enumerate(text):
-        # Анализ количества слов в предложениях
+        # Анализ количества предложений
         sents_info = sents_analyze(result)
         # Вычисляем количество слов в предложениях
         word_count = sum(sents_info[0])
         # Вычисляем среднее значение слов в каждом предложении
         average = round(word_count / sents_info[1], 2)
+
+        
         # Вызываем функцию частотного анализа и выводим результат
         freqs = freq_analyze(result)
         freqs_list.append(freqs)
@@ -40,13 +42,13 @@ async def start_freq_analyze(filenames, text, freqs_list, results_lines, freq_li
         
         text_append(filenames, results_lines, r, average, sorted_freqs)
         #for end
-    cutout_freqs(freq_list_normalized, freq_list_normalized_sorted,cut_threshold=2)
+    # cutout_freqs(freq_list_normalized, freq_list_normalized_sorted,cut_threshold=0)
 
-def cutout_freqs(freq_list_normalized, freq_list_normalized_sorted, cut_threshold):
-    for freqs in freq_list_normalized:
-        sorted_freqs = {k: v for k, v in sorted(freqs.items(), key=lambda item: item[1], reverse=True)}
-        sorted_freqs_filtered = {k: v for k, v in sorted_freqs.items() if v >= cut_threshold}
-        freq_list_normalized_sorted.append(sorted_freqs_filtered)
+# def cutout_freqs(freq_list_normalized, freq_list_normalized_sorted, cut_threshold):
+#     for freqs in freq_list_normalized:
+#         sorted_freqs = {k: v for k, v in sorted(freqs.items(), key=lambda item: item[1], reverse=True)}
+#         sorted_freqs_filtered = {k: v for k, v in sorted_freqs.items() if v >= cut_threshold}
+#         freq_list_normalized_sorted.append(sorted_freqs_filtered)
 
 #Анализ длины предложений
 def sents_analyze(text):
@@ -86,6 +88,26 @@ def stem_lemma(freqs_list):
             stem_lemma_list[stem_word] += freq
     
     return stem_lemma_list
+
+# def stem_lemma(freqs_list):
+#     morph = pymorphy2.MorphAnalyzer()
+#     stemmer = SnowballStemmer("russian")
+
+#     # Используем Counter() из первого элемента freqs_list
+#     stem_lemma_list = freqs_list[0].copy()
+
+#     # Проходимся по каждому слову в freqs_list (пропускаем первый элемент, так как мы уже его скопировали)
+#     for freqs in freqs_list[1:]:
+#         for word, freq in freqs.items():
+#             # Получаем нормальную форму слова с помощью pymorphy2
+#             lemma = morph.parse(word)[0].normal_form
+#             # Получаем стем (неизменяемую форму) слова с помощью nltk.stem
+#             stem_word = stemmer.stem(lemma)
+
+#             # Обновляем значения в stem_lemma_list
+#             stem_lemma_list[stem_word] += freq
+
+#     return stem_lemma_list
 
 def text_append(filenames, results_lines, r, average, sorted_freqs):
     # Создаем подмассив для каждого текста
@@ -134,6 +156,7 @@ async def init():
     text = await asyncio.gather(*tasks)
 
     await start_freq_analyze(file_names, text, freqs_list, results_lines, freq_list_normalized,freq_list_normalized_sorted)
+
     while True:
         # Выбор пользователя на вывод данных
         choice = input("Вывести результаты частотной характеристики в файл (Y)?\n"+

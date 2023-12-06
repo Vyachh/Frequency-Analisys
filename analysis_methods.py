@@ -1,12 +1,44 @@
+import time
 import mpld3
 import numpy as np
 import matplotlib.pyplot as plt
 import file_paths as fp
 from matplotlib import cm
 from scipy.stats import spearmanr
+from collections import Counter
 
 label_fontsize = 7
 max_textsize = 40
+
+# def optimize_freqs_lists(list1, list2):
+#     joint_list = list1 + list2
+
+#     optimized_list1 = separate(joint_list.copy(), list1)
+#     optimized_list2 = separate(joint_list.copy(), list2)
+
+#     return optimized_list1, optimized_list2
+
+# def separate(main_text, separated_text):
+#     for word2 in separated_text:
+#         for word1 in main_text: 
+#             if(word1 == word2):
+#                  main_text[word1] = 0
+#     return main_text
+
+def pad_arrays(array1, array2):
+    max_length = max(len(array1), len(array2))
+    for i in range(max_length):
+        counter1 = array1 if i < len(array1) else Counter()
+        counter2 = array2 if i < len(array2) else Counter()
+        all_words = set(counter1.keys()).union(set(counter2.keys()))
+        for word in all_words:
+            if word not in counter1:
+                counter1[word] = 0
+            if word not in counter2:
+                counter2[word] = 0
+        array1[i] = counter1
+        array2[i] = counter2
+    return array1, array2
 
 def calculate_corr_method(x, y, method):
     if method == 'pearson':
@@ -16,14 +48,17 @@ def calculate_corr_method(x, y, method):
     else:
         raise ValueError("Неподдерживаемый метод корреляции")
 
-def plot_correlation(freqs_list, filenames, method, title):
+def plot_correlation(freqs_list, filenames, title):
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
     for j, ax in enumerate(axes.flatten()):
+
+        first_list, second_list = pad_arrays(freqs_list[0].copy(), freqs_list[j + 1].copy())
         common_words = set(freqs_list[0].keys()) & set(freqs_list[j + 1].keys())
 
-        x = np.array([freqs_list[0][word] for word in common_words], dtype=np.float64)
-        y = np.array([freqs_list[j + 1][word] for word in common_words], dtype=np.float64)
+        x = np.array([first_list[word] for word in common_words], dtype=np.float64)
+        y = np.array([second_list[word] for word in common_words], dtype=np.float64)
+
 
         corr_value = np.corrcoef(x, y)[0, 1]
         # Названия осей
@@ -42,11 +77,11 @@ def plot_correlation(freqs_list, filenames, method, title):
     plt.show()
 
 def pearson(freqs_list=[], filenames=[]):
-     plot_correlation(freqs_list, filenames,"pearson", 'Корреляция Пирсона')
+     plot_correlation(freqs_list, filenames, 'Корреляция Пирсона')
 
 def spearman(freqs_list=[], filenames=[]):
-    plot_correlation(freqs_list, filenames,"spearman", 'Корреляция Спирмена')
-
+    plot_correlation(freqs_list, filenames, 'Корреляция Спирмена')
+    
 def odds_ratios(freqs_list=[], filenames=[]):
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     for j, ax in enumerate(axes.flatten()):

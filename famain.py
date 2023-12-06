@@ -1,6 +1,5 @@
 import asyncio
 import falib as fl
-import file_paths as fp
 
 async def main():
     fl.clear_console()
@@ -8,4 +7,5 @@ async def main():
     await fl.init()
 
 asyncio.run(main())
-print("Done...")
+print("Done...") 
+
